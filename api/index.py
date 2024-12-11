@@ -9,6 +9,7 @@ import os
 
 # Initialize Flask app with default template folder (Flask will look for templates in the 'templates' folder)
 app = Flask(__name__, template_folder='../templates', static_folder='../static')
+app.config['DEBUG'] = False
 
 # Ensure static/charts directory exists
 os.makedirs("static/charts", exist_ok=True)
