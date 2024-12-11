@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Analysis App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        .container {
+            display: flex;
+            margin: 0 auto;
+            padding: 0 4px;
+            justify-content: space-between;
+            min-height: 100vh;
+        }
+
+        .form-container {
+            width: 20%;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-container {
+            width: 80%;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        input,
+        select,
+        button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0 20px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .loading {
+            text-align: center;
+            font-size: 20px;
+            color: #3498db;
+            display: none;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .form-container,
+            .chart-container {
+                width: 100%;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Chart Container -->
+        <div class="chart-container" id="chart-container"></div>
+        <!-- Form Container -->
+        <div class="form-container">
+            <form id="stock-form" action="/analyze" method="POST">
+                <div class="space-y-4">
+                    <!-- Ticker input -->
+                    <div class="form-group">
+                        <label for="ticker">Ticker Symbol:</label>
+                        <input type="text" id="ticker" name="ticker" required class="p-2 w-full border border-gray-300 rounded">
+                    </div>
+                    <!-- Period and interval -->
+                    <div class="form-group flex space-x-4">
+                        <div>
+                            <label for="period">Period:</label>
+                            <select id="period" name="period" class="p-2 w-full border border-gray-300 rounded">
+                                <option value="1mo">1 Month</option>
+                                <option value="3mo">3 Months</option>
+                                <option value="6mo">6 Months</option>
+                                <option value="1y">1 Year</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="interval">Interval:</label>
+                            <select id="interval" name="interval" class="p-2 w-full border border-gray-300 rounded">
+                                <option value="1d">1 Day</option>
+                                <option value="1wk">1 Week</option>
+                                <option value="1mo">1 Month</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- Date range -->
+                    <div class="form-group flex space-x-4">
+                        <div>
+                            <label for="start_date">Start Date:</label>
+                            <input type="date" id="start_date" name="start_date" class="p-2 w-full border border-gray-300 rounded">
+                        </div>
+                        <div>
+                            <label for="end_date">End Date:</label>
+                            <input type="date" id="end_date" name="end_date" class="p-2 w-full border border-gray-300 rounded">
+                        </div>
+                    </div>
+                    <!-- Indicators selection -->
+                    <div class="form-group">
+                        <label for="indicators">Select Indicators:</label>
+                        <select id="indicators" name="indicators" multiple class="p-2 w-full border border-gray-300 rounded">
+                            <option value="SMA_10">SMA 10</option>
+                            <option value="EMA_20">EMA 20</option>
+                            <option value="RSI">RSI</option>
+                            <option value="MACD">MACD</option>
+                            <option value="Bollinger Bands">Bollinger Bands</option>
+                            <option value="Moving Average Convergence Divergence">MACD</option>
+                            <option value="Stochastic Oscillator">Stochastic Oscillator</option>
+                            <option value="ADX">ADX</option>
+                            <option value="CCI">CCI</option>
+                            <option value="ATR">ATR</option>
+                        </select>
+                    </div>
+                    <!-- Chart settings -->
+                    <div class="form-group">
+                        <label for="chart_type">Chart Type:</label>
+                        <select id="chart_type" name="chart_type" class="p-2 w-full border border-gray-300 rounded">
+                            <option value="candlestick">Candlestick</option>
+                            <option value="line">Line</option>
+                            <option value="bar">Bar</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="line_color">Line Color:</label>
+                        <input type="color" id="line_color" name="line_color" class="p-2 w-full border border-gray-300 rounded" value="#ff6347">
+                    </div>
+                    <div class="form-group">
+                        <label for="chart_theme">Chart Theme:</label>
+                        <select id="chart_theme" name="chart_theme" class="p-2 w-full border border-gray-300 rounded">
+                            <option value="plotly_white">White</option>
+                            <option value="ggplot2">GGPlot2</option>
+                            <option value="seaborn">Seaborn</option>
+                        </select>
+                    </div>
+                    <!-- Submit button -->
+                    <button type="submit" class="w-full bg-blue-500 text-white p-3 rounded">Generate Chart</button>
+                </div>
+            </form>
+
+            <div class="loading" id="loading">Loading chart...</div>
+            <div class="error" id="error-message"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('stock-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            // Show loading indicator
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('chart-container').innerHTML = '';
+            document.getElementById('error-message').innerHTML = '';
+
+            const formData = new FormData(this);
+
+            fetch('/analyze', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Hide loading indicator
+                    document.getElementById('loading').style.display = 'none';
+
+                    if (data.success) {
+                        const chartContainer = document.getElementById('chart-container');
+                        chartContainer.innerHTML = `<iframe src="${data.chart_url}" frameborder="0"></iframe>`;
+                    } else {
+                        document.getElementById('error-message').innerHTML = 'Error: ' + data.error;
+                    }
+                })
+                .catch(err => {
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('error-message').innerHTML = 'An unexpected error occurred.';
+                });
+        });
+    </script>
+</body>
+
+</html>
